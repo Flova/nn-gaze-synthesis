@@ -18,11 +18,11 @@ DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 def predict(model):
     model.eval()
 
-    data_set = PupilcoreTrackerDataset("/homes/17vahl/Downloads/pupilcore_trials", sequence_length=400)
+    data_set = PupilcoreTrackerDataset("/homes/17vahl/Eye Tracking/2022_06_29", sequence_length=400)
     data_loader = DataLoader(data_set, batch_size=1, shuffle=True)
 
     runs = 500
-    debug_show = True
+    debug_show = False
 
     with torch.no_grad():
         for run in range(1, runs + 1):
@@ -36,6 +36,7 @@ def predict(model):
                 data = data.transpose(0, 1)
                 targets = targets.transpose(0, 1)
 
+                a=0
                 for frame, target in zip(data, targets):
                     output = model(frame)
                     canvas = viz.draw_pred_and_target(frame[0], output[0,-1], target[0])
@@ -44,7 +45,8 @@ def predict(model):
                         cv2.waitKey(1)
                         time.sleep(0.1)
                     else:
-                        cv2.imwrite(f"viz/debug_prediction_{run:08d}_{i:03d}.jpg", canvas)
+                        cv2.imwrite(f"viz2/debug_prediction_{run:08d}_{i:03d}_{a:03d}.jpg", canvas)
+                        a+=1
 
 if __name__ == "__main__":
     print("Load model")

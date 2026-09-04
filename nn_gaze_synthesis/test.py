@@ -2,6 +2,7 @@ import time
 
 import cv2
 import torch
+import numpy as np
 from tqdm import tqdm
 from torchvision.transforms import GaussianBlur
 
@@ -15,9 +16,9 @@ DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 def evaluate(model):
     model.eval()
 
-    data_set = PupilcoreTrackerDataset("/homes/17vahl/Downloads/pupilcore_trials", sequence_length=400)
+    data_set = PupilcoreTrackerDataset("/homes/17vahl/Eye Tracking_Person_Trials/person4", sequence_length=400)
 
-    score = 0.0
+    scores = []
 
     with torch.no_grad():
         for i, sample in enumerate(tqdm(data_set)):
@@ -49,14 +50,15 @@ def evaluate(model):
                     max(min(round(float(output[1] * frame.shape[3])), frame.shape[3] - 1), 0)
                 ] = 1
                 #print(Q_b.shape, P.shape)
-                P = GaussianBlur(81, sigma=10.0)(P.unsqueeze(0)).squeeze()
-                cv2.imshow("Img", P.unsqueeze(2).numpy()*255)
-                cv2.waitKey(0)
+                P = GaussianBlur(81, sigma=20.0)(P.unsqueeze(0)).squeeze()
+                #cv2.imshow("Img", P.unsqueeze(2).numpy()*255)
+                #cv2.waitKey(0)
                 score_now = (1/Q_b.sum()) * (Q_b * ((P-P.mean()) / P.std())).sum()
                 print(score_now, target, output, P.std(), P.sum())
-                score += score_now
+                scores.append(float(score_now))
 
-    print(score / len(data_set))
+    scores = np.asarray(scores)
+    print(scores.mean(), scores.max(), scores.std())
                 
 
 if __name__ == "__main__":

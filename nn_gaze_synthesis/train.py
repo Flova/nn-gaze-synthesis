@@ -39,8 +39,8 @@ def train(model):
     train_set, val_set = random_split(data_set, [n_train, n_val], generator=torch.Generator().manual_seed(0))
 
     # Create Dataloader
-    train_data_loader = DataLoader(train_set, batch_size=1, num_workers=4, prefetch_factor=2, shuffle=True)
-    val_data_loader = DataLoader(val_set, batch_size=1, num_workers=4, prefetch_factor=2, shuffle=False)
+    train_data_loader = DataLoader(train_set, batch_size=1, num_workers=2, prefetch_factor=2, shuffle=True)
+    #val_data_loader = DataLoader(val_set, batch_size=1, num_workers=2, prefetch_factor=2, shuffle=False)
 
     # Create Optimizer, Scheduler, ...
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
@@ -57,7 +57,7 @@ def train(model):
             # Run model
             output = model(data)
             # Calculate loss
-            loss = criterion(output, targets)
+            loss = criterion(output, targets) + 0.5 * (0.2 - criterion(output, 0.5 * torch.sqrt(torch.ones(targets.shape[0], targets.shape[1], 2, device=DEVICE))).clamp(0,0.2))
             # Calc gradients
             loss.backward()
 
